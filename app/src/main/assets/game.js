@@ -1150,7 +1150,7 @@ function update() {
     }
 
     // Ground
-    if (!P.isBall && solidBelow && P.y + PS >= groundY) {
+    if ((!P.isBall || P.gravitySign > 0) && solidBelow && P.y + PS >= groundY) {
       // If player's top is below ground level, they fell through a gap — kill them
       if (P.y > groundY) {
         kill();
@@ -1171,7 +1171,7 @@ function update() {
     }
 
     // Fell into gap / void — kill as soon as player falls a full tile below ground
-    if (!P.isBall && P.y > groundY + PS) {
+    if ((!P.isBall || P.gravitySign > 0) && P.y > groundY + PS) {
       kill();
       return;
     }
@@ -1259,7 +1259,7 @@ function update() {
         break;
       case "cubeP":
         if (rr(P.x, P.y, PS, PS, o.x - 10, groundY - 80, 50, 80)) {
-          P.isShip = false;
+          P.isShip = false; P.isBall = false; P.gravitySign = 1;
         }
         break;
       case "mover": {
@@ -2153,66 +2153,34 @@ function drawMenu() {
     ctx.fillText("Select Level", W / 2, H * 0.11);
     ctx.restore();
 
-    const bw = Math.min(360, W * 0.5),
-      bh = 78,
-      bx = W / 2 - bw / 2;
+    const cols = W < 560 ? 2 : 3;
+    const gap = 10, margin = Math.max(10, W * 0.03);
+    const bw = Math.min(360, (W - margin * 2 - gap * (cols - 1)) / cols), bh = 64;
+    const totalW = cols * bw + (cols - 1) * gap, startX = (W - totalW) / 2;
+    const startY = H * 0.17, rowGap = 10;
     levels.forEach((lv, i) => {
-      const by = H * 0.18 + i * 100;
-      const hov = menuSel === i;
-      const best = bestProg[i] || 0;
+      const bx = startX + (i % cols) * (bw + gap), by = startY + Math.floor(i / cols) * (bh + rowGap);
+      const hov = menuSel === i, best = bestProg[i] || 0;
       const col = best >= 100 ? "#00ff88" : `hsl(${lv.hue}, 70%, 50%)`;
-      ctx.save();
-      if (hov) {
-        ctx.shadowColor = col;
-        ctx.shadowBlur = 18;
-      }
-      if (hov) {
-        const grd = ctx.createLinearGradient(bx, by, bx + bw, by);
-        grd.addColorStop(0, col);
-        grd.addColorStop(1, colorAlpha(col, 0.7));
-        ctx.fillStyle = grd;
-      } else {
-        ctx.fillStyle = "rgba(255,255,255,0.04)";
-      }
-      ctx.strokeStyle = col;
-      ctx.lineWidth = hov ? 2.5 : 1.5;
-      rRect(bx, by, bw, bh, 12);
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-
-      // Level name
-      ctx.fillStyle = hov ? "#000" : "#fff";
-      ctx.font = `bold ${Math.min(22, W * 0.03)}px "Segoe UI", system-ui, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText(lv.name, W / 2, by + 32);
-
-      // Difficulty + best progress
-      const diff = ["Easy", "Medium", "Hard"][i];
-      ctx.font = `${Math.min(14, W * 0.018)}px "Segoe UI", system-ui, sans-serif`;
-      ctx.fillStyle = hov ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.45)";
-      ctx.fillText(
-        `${diff}  \u00B7  Best: ${best}%${best >= 100 ? " \u2605" : ""}`,
-        W / 2,
-        by + 56
-      );
-
-      // Mini progress bar inside level button
-      const pbW = bw * 0.6, pbH = 4, pbX = W / 2 - pbW / 2, pbY = by + 64;
-      ctx.fillStyle = hov ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.06)";
-      ctx.fillRect(pbX, pbY, pbW, pbH);
-      if (best > 0) {
-        ctx.fillStyle = hov ? "rgba(0,0,0,0.4)" : col;
-        ctx.fillRect(pbX, pbY, pbW * (best / 100), pbH);
-      }
-
+      ctx.save(); if (hov) { ctx.shadowColor = col; ctx.shadowBlur = 14; }
+      ctx.fillStyle = hov ? col : "rgba(255,255,255,0.035)"; ctx.strokeStyle = col; ctx.lineWidth = hov ? 2 : 1;
+      rRect(bx, by, bw, bh, 9); ctx.fill(); ctx.stroke(); ctx.restore();
+      ctx.fillStyle = hov ? "#071018" : "#fff"; ctx.textAlign = "center";
+      ctx.font = `bold ${Math.min(16, W * 0.025)}px "Segoe UI", system-ui, sans-serif`;
+      ctx.fillText(`${i + 1}. ${lv.name}`, bx + bw / 2, by + 25, bw - 12);
+      ctx.font = `${Math.min(12, W * 0.019)}px "Segoe UI", system-ui, sans-serif`;
+      ctx.fillStyle = hov ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.55)";
+      const chapter = i < 5 ? "1.0 · Cube" : i < 7 ? "Mirror" : i < 10 ? "Ball" : i < 12 ? "Blue orb/pad" : i < 17 ? "Mini / Pink" : "Bonus";
+      ctx.fillText(`${chapter} · Best ${best}%`, bx + bw / 2, by + 45, bw - 10);
+      ctx.fillStyle = hov ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.07)"; ctx.fillRect(bx + 8, by + bh - 7, bw - 16, 3);
+      if (best > 0) { ctx.fillStyle = hov ? "#fff" : col; ctx.fillRect(bx + 8, by + bh - 7, (bw - 16) * best / 100, 3); }
       menuBtns.push({ x: bx, y: by, w: bw, h: bh, act: 10 + i });
     });
-
     // Back button
     const backBw = Math.min(200, W * 0.28);
     const backBx = W / 2 - backBw / 2;
-    const backY = H * 0.18 + levels.length * 100 + 16;
+    const rows = Math.ceil(levels.length / (W < 560 ? 2 : 3));
+    const backY = Math.min(H - 58, H * 0.17 + rows * 74 + 8);
     const bhBack = 52;
     const hov = menuSel === levels.length;
     ctx.save();
