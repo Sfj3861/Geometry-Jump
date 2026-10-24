@@ -264,6 +264,9 @@ function goToMenu() {
   particles = [];
 }
 
+// Android system back button bridge.
+window.gameBack = goToMenu;
+
 // -------------------- Audio --------------------
 let ac = null,
   masterGain = null;
