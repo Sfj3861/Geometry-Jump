@@ -32,19 +32,22 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.2.0
-          name: Geometry Jump v0.2.0
+          tag_name: v0.3.0
+          name: Geometry Jump v0.3.0
           make_latest: true
           generate_release_notes: true
           overwrite_files: true
           files: app/build/outputs/apk/debug/app-debug.apk
           body: |
-            ## Geometry Jump v0.2.0
+            ## Geometry Jump v0.3.0
 
             - Replaced the initial prototype with an open-source canvas game base.
             - Improved frame stepping and mobile canvas scaling.
             - Added Newgrounds soundtrack tracks with artist attribution and remote-playback fallback.
             - Added open-source and third-party notices.
+            - Added a 17-level progressive campaign plus the three original bonus stages (20 playable levels total).
+            - Added mirror portals, ball gravity switching, blue jump pads/orbs, mini/large portals, and pink jump pads/orbs.
+            - Reworked level selection into a compact grid for the expanded campaign.
 
             ### Music credits
             - **Air Shifter** — JensVide: https://www.newgrounds.com/audio/listen/1378746
