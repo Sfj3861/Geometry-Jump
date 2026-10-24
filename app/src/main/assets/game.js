@@ -180,19 +180,30 @@ function iUp(e) {
 }
 
 window.addEventListener("keydown", (e) => {
+  const c = e.code || (e.key === " " ? "Space" : e.key === "ArrowUp" ? "ArrowUp" : /^w$/i.test(e.key) ? "KeyW" : e.key);
+  const jumpKey = c === "Space" || c === "ArrowUp" || c === "KeyW";
+  if (jumpKey) e.preventDefault();
+  // Prevent browser scrolling even when a key is held down.
   if (e.repeat) return;
-  const c = e.code;
-  if (c === "Space" || c === "ArrowUp" || c === "KeyW") iDown(e);
-  if (c === "KeyF") {
-    toggleFullscreen();
-    return;
-  }
 
-  if (c === "Escape") {
-    if (gameState === "playing" || gameState === "paused") {
-      goToMenu();
+  if (jumpKey) {
+    if (gameState === "playing") {
+      iDown(e);
       return;
     }
+    if (gameState === "menu") {
+      if (c === "Space") { menuAction(); return; }
+      if (c === "ArrowUp") { menuSel = Math.max(menuSel - 1, 0); return; }
+      if (c === "KeyW") return;
+    }
+    if (gameState === "dead" && c === "Space") { restart(); return; }
+    if (gameState === "complete" && c === "Space") { goToMenu(); return; }
+    if (gameState === "paused" && c === "Space") { gameState = "playing"; return; }
+  }
+
+  if (c === "KeyF") { toggleFullscreen(); return; }
+  if (c === "Escape") {
+    if (gameState === "playing" || gameState === "paused") { goToMenu(); return; }
   }
   if (c === "KeyP") {
     if (gameState === "playing") gameState = "paused";
@@ -202,21 +213,24 @@ window.addEventListener("keydown", (e) => {
 
   if (gameState === "menu") {
     const max = menuScreen === "main" ? 2 : levels.length;
-    if (c === "ArrowDown") menuSel = Math.min(menuSel + 1, max);
-    if (c === "ArrowUp") menuSel = Math.max(menuSel - 1, 0);
-    if (c === "Enter" || c === "Space") {
-      e.preventDefault();
-      menuAction();
-    }
+    if (c === "ArrowDown" || c === "KeyS") menuSel = Math.min(menuSel + 1, max);
+    if (c === "ArrowLeft" && menuScreen === "levels") menuSel = Math.max(menuSel - 1, 0);
+    if (c === "ArrowRight" && menuScreen === "levels") menuSel = Math.min(menuSel + 1, max);
+    if (c === "Enter") { e.preventDefault(); menuAction(); }
   }
-  if (gameState === "dead" && (c === "Space" || c === "Enter")) restart();
-  if (gameState === "complete" && (c === "Space" || c === "Enter")) goToMenu();
 });
 
 window.addEventListener("keyup", (e) => {
-  if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") iUp(e);
+  const c = e.code || (e.key === " " ? "Space" : e.key === "ArrowUp" ? "ArrowUp" : /^w$/i.test(e.key) ? "KeyW" : e.key);
+  if (c === "Space" || c === "ArrowUp" || c === "KeyW") {
+    e.preventDefault();
+    iUp(e);
+  }
 });
-
+window.addEventListener("blur", () => { inputHeld = false; _inputWasDown = false; });
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) { inputHeld = false; _inputWasDown = false; }
+});
 function tapHandler(x, y) {
   if (gameState === "menu") {
     menuClickAt(x, y);
@@ -1299,7 +1313,7 @@ function drawBG() {
   ctx.fillRect(0, 0, W, H);
 
   // Parallax scrolling grid
-  ctx.strokeStyle = `hsla(${hue}, 50%, ${15 + pulseLit * 2}%, 0.06)`;
+  ctx.strokeStyle = `hsla(${hue}, 30%, ${15 + pulseLit}%, 0.035)`;
   ctx.lineWidth = 1;
   const gs = 80;
   const ox = -(cameraX * 0.3 % gs);
@@ -1369,7 +1383,7 @@ function drawGroundAndCeil() {
 
   // Ground line blocks pattern
   ctx.save();
-  ctx.strokeStyle = `hsla(${hue}, 70%, 30%, 0.15)`;
+  ctx.strokeStyle = `hsla(${hue}, 42%, 36%, 0.12)`;
   ctx.lineWidth = 1;
   const bSz = 40;
   const bOx = -(cameraX % bSz);
@@ -1391,9 +1405,9 @@ function drawGroundAndCeil() {
 
   // Glowing ground line — thicker with double glow
   ctx.save();
-  ctx.shadowColor = `hsl(${hue}, 100%, 55%)`;
-  ctx.shadowBlur = 18;
-  ctx.strokeStyle = `hsl(${hue}, 90%, 52%)`;
+  ctx.shadowColor = `hsl(${hue}, 65%, 48%)`;
+  ctx.shadowBlur = 4;
+  ctx.strokeStyle = `hsl(${hue}, 62%, 48%)`;
   ctx.lineWidth = 3;
   ctx.beginPath();
   let pen = false;
@@ -1411,7 +1425,7 @@ function drawGroundAndCeil() {
   ctx.stroke();
 
   // Ceiling line — subtle
-  ctx.shadowBlur = 10;
+  ctx.shadowBlur = 2;
   ctx.strokeStyle = `hsla(${hue}, 80%, 45%, 0.6)`;
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -1438,8 +1452,8 @@ function drawObs() {
         sg.addColorStop(0, `hsl(${hue + 30}, 100%, 60%)`);
         sg.addColorStop(1, `hsl(${hue + 30}, 80%, 35%)`);
         ctx.fillStyle = sg;
-        ctx.shadowColor = `hsl(${hue + 30}, 100%, 55%)`;
-        ctx.shadowBlur = 12;
+        ctx.shadowColor = `hsl(${hue + 30}, 65%, 45%)`;
+        ctx.shadowBlur = 3;
         ctx.beginPath();
         ctx.moveTo(sx, surfY);
         ctx.lineTo(sx + SPIKE_W, surfY);
@@ -1523,7 +1537,7 @@ function drawObs() {
         const bounce = o._hit ? Math.sin(now() * 0.01) * 3 : 0;
         const padColor = o.type === "pinkPad" ? "#ff44cc" : (o.type === "bluePad" ? "#33aaff" : "#ffdd00");
         ctx.shadowColor = padColor;
-        ctx.shadowBlur = 16;
+        ctx.shadowBlur = 3;
         const pdg = ctx.createLinearGradient(sx + 20, groundY - 16, sx + 20, groundY);
         pdg.addColorStop(0, padColor);
         pdg.addColorStop(1, o.type === "pinkPad" ? "#aa1177" : (o.type === "bluePad" ? "#1155aa" : "#cc9900"));
@@ -1694,8 +1708,8 @@ function drawPlayer() {
       const t = trail[i];
       const tx = t.x - cameraX;
       const ty = t.y - PS / 2;
-      ctx.globalAlpha = t.life * 0.35;
-      ctx.fillStyle = `hsl(${ph}, 80%, 55%)`;
+      ctx.globalAlpha = t.life * 0.18;
+      ctx.fillStyle = `hsl(${ph}, 55%, 55%)`;
       const sz = PS * t.life * 0.6;
       ctx.fillRect(tx - sz / 2, ty - sz / 2, sz, sz);
     }
@@ -1732,7 +1746,7 @@ function drawPlayer() {
   } else {
     // Cube mode — improved with gradient, icon, and glow
     ctx.save();
-    ctx.shadowColor = `hsl(${ph}, 100%, 60%)`;
+    ctx.shadowColor = `hsl(${ph}, 65%, 52%)`;
     ctx.shadowBlur = 16;
     // Gradient fill
     const cg = ctx.createLinearGradient(-PS / 2, -PS / 2, PS / 2, PS / 2);
@@ -1788,7 +1802,7 @@ function drawHUD() {
     grd.addColorStop(0, `hsl(${hue + 120}, 80%, 55%)`);
     grd.addColorStop(1, `hsl(${hue + 140}, 90%, 65%)`);
     ctx.fillStyle = grd;
-    ctx.shadowColor = `hsl(${hue + 120}, 100%, 60%)`;
+    ctx.shadowColor = `hsl(${hue + 120}, 60%, 52%)`;
     ctx.shadowBlur = 10;
     ctx.fillRect(bx, by, bw * (prog / 100), bh);
     ctx.restore();
@@ -2020,189 +2034,149 @@ function colorAlpha(c, a) {
   return c;
 }
 
-function drawMenu() {
-  // Clean dark background
-  ctx.fillStyle = "#0b0b14";
-  ctx.fillRect(0, 0, W, H);
-
-  // Animated subtle grid with slight parallax
-  const t = now() * 0.00008;
-  ctx.strokeStyle = "rgba(60, 60, 120, 0.06)";
-  ctx.lineWidth = 1;
-  const gs = 70;
-  const ox = (t * 400) % gs;
-  for (let gx = -gs + ox; gx < W + gs; gx += gs) {
-    ctx.beginPath();
-    ctx.moveTo(gx, 0);
-    ctx.lineTo(gx, H);
-    ctx.stroke();
-  }
-  for (let gy = 0; gy < H; gy += gs) {
-    ctx.beginPath();
-    ctx.moveTo(0, gy);
-    ctx.lineTo(W, gy);
-    ctx.stroke();
-  }
-
-  // Floating ambient particles
+function drawBrandMark(cx, top, size) {
+  const x = cx - size / 2, y = top;
   ctx.save();
-  for (let i = 0; i < 25; i++) {
-    const px = ((Math.sin(t * 800 + i * 7.3) + 1) / 2) * W;
-    const py = ((Math.cos(t * 600 + i * 4.1) + 1) / 2) * H;
-    const r = 1 + Math.sin(t * 1200 + i) * 0.8;
-    ctx.globalAlpha = 0.08 + Math.sin(t * 900 + i * 2) * 0.04;
-    ctx.fillStyle = `hsl(${(i * 47 + t * 3000) % 360}, 60%, 60%)`;
-    ctx.beginPath();
-    ctx.arc(px, py, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
+  // Original geometric mascot: beveled square, thick ink outline and two eyes.
+  ctx.lineJoin = "round";
+  ctx.fillStyle = "#65c95b";
+  ctx.strokeStyle = "#182b3c";
+  ctx.lineWidth = Math.max(3, size * 0.075);
+  ctx.beginPath();
+  ctx.moveTo(x + size * 0.12, y + size * 0.08);
+  ctx.lineTo(x + size * 0.88, y + size * 0.08);
+  ctx.lineTo(x + size * 0.94, y + size * 0.18);
+  ctx.lineTo(x + size * 0.94, y + size * 0.84);
+  ctx.lineTo(x + size * 0.82, y + size * 0.94);
+  ctx.lineTo(x + size * 0.12, y + size * 0.94);
+  ctx.lineTo(x + size * 0.06, y + size * 0.82);
+  ctx.lineTo(x + size * 0.06, y + size * 0.18);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "#f6f6df";
+  ctx.fillRect(x + size * 0.25, y + size * 0.28, size * 0.18, size * 0.22);
+  ctx.fillRect(x + size * 0.59, y + size * 0.28, size * 0.18, size * 0.22);
+  ctx.fillStyle = "#243b4b";
+  ctx.fillRect(x + size * 0.30, y + size * 0.34, size * 0.08, size * 0.12);
+  ctx.fillRect(x + size * 0.64, y + size * 0.34, size * 0.08, size * 0.12);
+  ctx.fillStyle = "#2c7340";
+  ctx.fillRect(x + size * 0.28, y + size * 0.66, size * 0.44, size * 0.10);
   ctx.restore();
-
-  menuBtns = [];
-
-  if (menuScreen === "main") {
-    // Title with double glow
-    ctx.save();
-    ctx.shadowColor = "#00ff88";
-    ctx.shadowBlur = 45;
-    ctx.fillStyle = "#fff";
-    ctx.font = `bold ${Math.min(68, W * 0.085)}px "Segoe UI", system-ui, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText("GEOMETRY DASH", W / 2, H * 0.2);
-    ctx.restore();
-
-    // Subtitle with accent
-    ctx.fillStyle = "rgba(255,255,255,0.3)";
-    ctx.font = `${Math.min(16, W * 0.02)}px "Segoe UI", system-ui, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText("A browser-based tribute", W / 2, H * 0.2 + 36);
-
-    // Decorative line
-    const lineW = Math.min(240, W * 0.3);
-    ctx.save();
-    ctx.strokeStyle = "rgba(0, 255, 136, 0.2)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(W / 2 - lineW / 2, H * 0.2 + 50);
-    ctx.lineTo(W / 2 + lineW / 2, H * 0.2 + 50);
-    ctx.stroke();
-    ctx.restore();
-
-    const bw = Math.min(280, W * 0.4),
-      bh = 58,
-      bx = W / 2 - bw / 2;
-    const items = [
-      { label: "\u25B6  Play", col: "#00ff88" },
-      {
-        label: "Practice: " + (practiceMode ? "ON" : "OFF"),
-        col: practiceMode ? "#ffaa00" : "#555",
-      },
-      {
-        label: "Sound: " + (muted ? "OFF" : "ON"),
-        col: muted ? "#ff4444" : "#555",
-      },
-    ];
-    items.forEach((it, i) => {
-      const by = H * 0.37 + i * 76;
-      const hov = menuSel === i;
-      ctx.save();
-      if (hov) {
-        ctx.shadowColor = it.col;
-        ctx.shadowBlur = 18;
-      }
-      // Button fill with gradient on hover
-      if (hov) {
-        const grd = ctx.createLinearGradient(bx, by, bx + bw, by);
-        grd.addColorStop(0, it.col);
-        grd.addColorStop(1, colorAlpha(it.col, 0.8));
-        ctx.fillStyle = grd;
-      } else {
-        ctx.fillStyle = "rgba(255,255,255,0.04)";
-      }
-      ctx.strokeStyle = it.col;
-      ctx.lineWidth = hov ? 2.5 : 1.5;
-      rRect(bx, by, bw, bh, 12);
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-      ctx.fillStyle = hov ? "#000" : "#fff";
-      ctx.font = `bold ${Math.min(20, W * 0.028)}px "Segoe UI", system-ui, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText(it.label, W / 2, by + 37);
-      menuBtns.push({ x: bx, y: by, w: bw, h: bh, act: i });
-    });
-
-    // Controls footer
-    ctx.fillStyle = "rgba(255,255,255,0.18)";
-    ctx.font = `${Math.min(13, W * 0.016)}px "Segoe UI", system-ui, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText(
-      "Space / Click to jump  \u00B7  P pause  \u00B7  Esc menu  \u00B7  M mute  \u00B7  F fullscreen",
-      W / 2,
-      H - 22
-    );
-  } else {
-    // Level select — title
-    ctx.save();
-    ctx.shadowColor = "#fff";
-    ctx.shadowBlur = 15;
-    ctx.fillStyle = "#fff";
-    ctx.font = `bold ${Math.min(42, W * 0.055)}px "Segoe UI", system-ui, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText("Select Level", W / 2, H * 0.11);
-    ctx.restore();
-
-    const cols = W < 560 ? 2 : 3;
-    const gap = 10, margin = Math.max(10, W * 0.03);
-    const bw = Math.min(360, (W - margin * 2 - gap * (cols - 1)) / cols), bh = 64;
-    const totalW = cols * bw + (cols - 1) * gap, startX = (W - totalW) / 2;
-    const startY = H * 0.17, rowGap = 10;
-    levels.forEach((lv, i) => {
-      const bx = startX + (i % cols) * (bw + gap), by = startY + Math.floor(i / cols) * (bh + rowGap);
-      const hov = menuSel === i, best = bestProg[i] || 0;
-      const col = best >= 100 ? "#00ff88" : `hsl(${lv.hue}, 70%, 50%)`;
-      ctx.save(); if (hov) { ctx.shadowColor = col; ctx.shadowBlur = 14; }
-      ctx.fillStyle = hov ? col : "rgba(255,255,255,0.035)"; ctx.strokeStyle = col; ctx.lineWidth = hov ? 2 : 1;
-      rRect(bx, by, bw, bh, 9); ctx.fill(); ctx.stroke(); ctx.restore();
-      ctx.fillStyle = hov ? "#071018" : "#fff"; ctx.textAlign = "center";
-      ctx.font = `bold ${Math.min(16, W * 0.025)}px "Segoe UI", system-ui, sans-serif`;
-      ctx.fillText(`${i + 1}. ${lv.name}`, bx + bw / 2, by + 25, bw - 12);
-      ctx.font = `${Math.min(12, W * 0.019)}px "Segoe UI", system-ui, sans-serif`;
-      ctx.fillStyle = hov ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.55)";
-      const chapter = i < 5 ? "1.0 · Cube" : i < 7 ? "Mirror" : i < 10 ? "Ball" : i < 12 ? "Blue orb/pad" : i < 17 ? "Mini / Pink" : "Bonus";
-      ctx.fillText(`${chapter} · Best ${best}%`, bx + bw / 2, by + 45, bw - 10);
-      ctx.fillStyle = hov ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.07)"; ctx.fillRect(bx + 8, by + bh - 7, bw - 16, 3);
-      if (best > 0) { ctx.fillStyle = hov ? "#fff" : col; ctx.fillRect(bx + 8, by + bh - 7, (bw - 16) * best / 100, 3); }
-      menuBtns.push({ x: bx, y: by, w: bw, h: bh, act: 10 + i });
-    });
-    // Back button
-    const backBw = Math.min(200, W * 0.28);
-    const backBx = W / 2 - backBw / 2;
-    const rows = Math.ceil(levels.length / (W < 560 ? 2 : 3));
-    const backY = Math.min(H - 58, H * 0.17 + rows * 74 + 8);
-    const bhBack = 52;
-    const hov = menuSel === levels.length;
-    ctx.save();
-    if (hov) {
-      ctx.shadowColor = "#ff4444";
-      ctx.shadowBlur = 14;
-    }
-    ctx.fillStyle = hov ? "#ff4444" : "rgba(255,255,255,0.04)";
-    ctx.strokeStyle = "#ff4444";
-    ctx.lineWidth = hov ? 2.5 : 1.5;
-    rRect(backBx, backY, backBw, bhBack, 12);
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
-    ctx.fillStyle = hov ? "#000" : "#fff";
-    ctx.font = `bold ${Math.min(18, W * 0.024)}px "Segoe UI", system-ui, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText("\u2190  Back", W / 2, backY + 34);
-    menuBtns.push({ x: backBx, y: backY, w: backBw, h: bhBack, act: 99 });
-  }
 }
 
+function drawMenu() {
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#18344b");
+  bg.addColorStop(0.58, "#244c65");
+  bg.addColorStop(1, "#142b40");
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  // Restrained checker/grid motif, inspired by the early game's clean geometric stages.
+  const gs = 48, shift = (now() * 0.012) % gs;
+  ctx.strokeStyle = "rgba(218,237,242,0.055)";
+  ctx.lineWidth = 1;
+  for (let gx = -gs + shift; gx < W + gs; gx += gs) {
+    ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
+  }
+  for (let gy = 0; gy < H; gy += gs) {
+    ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+  }
+  // Subtle tiled shapes along the bottom; no animated neon particles.
+  ctx.fillStyle = "rgba(7,20,34,0.2)";
+  for (let x = -20; x < W + 40; x += 64) {
+    const yy = H - 26 - ((Math.floor(x / 64) % 2) * 10);
+    ctx.fillRect(x, yy, 44, 44);
+  }
+
+  menuBtns = [];
+  const small = Math.min(W, H) < 430;
+  const outline = "#172c3c";
+  const green = "#70d65e";
+  function button(x, y, w, h, label, selected, action, fill = "#4e94bb") {
+    ctx.save();
+    // Simple bevel and dark outline instead of glow.
+    ctx.fillStyle = "#102638";
+    rRect(x, y + 4, w, h, 8); ctx.fill();
+    ctx.fillStyle = selected ? "#f3d66a" : fill;
+    ctx.strokeStyle = outline; ctx.lineWidth = 3;
+    rRect(x, y, w, h, 8); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = selected ? "#263443" : "#f6f7e8";
+    ctx.font = `900 ${Math.min(20, h * 0.38, W * 0.026)}px "Trebuchet MS", "Arial Black", system-ui, sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(label, x + w / 2, y + h / 2 - 1, w - 14);
+    ctx.restore();
+    menuBtns.push({ x, y, w, h, act: action });
+  }
+
+  if (menuScreen === "main") {
+    const logoSize = Math.min(small ? 54 : 76, H * 0.22);
+    const top = Math.max(12, H * 0.055);
+    drawBrandMark(W / 2, top, logoSize);
+    ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#f8f6dc";
+    ctx.strokeStyle = "#142b3b"; ctx.lineWidth = 4;
+    ctx.font = `900 ${Math.min(small ? 28 : 44, W * 0.065, H * 0.13)}px "Trebuchet MS", "Arial Black", system-ui, sans-serif`;
+    const titleY = top + logoSize + (small ? 25 : 36);
+    ctx.strokeText("GEOMETRY JUMP", W / 2, titleY);
+    ctx.fillText("GEOMETRY JUMP", W / 2, titleY);
+    ctx.fillStyle = "rgba(235,246,243,0.75)";
+    ctx.font = `${Math.min(13, W * 0.018)}px system-ui, sans-serif`;
+    ctx.fillText("A CLASSIC-STYLE RHYTHM PLATFORMER", W / 2, titleY + 19);
+
+    const playW = Math.min(310, W * 0.52), playH = small ? 48 : 58;
+    const playX = (W - playW) / 2;
+    const playY = Math.min(H * 0.49, titleY + 35);
+    button(playX, playY, playW, playH, "▶  PLAY", menuSel === 0, 0, green);
+
+    const gap = 12, toggleW = Math.min(220, (W * 0.78 - gap) / 2), toggleH = small ? 38 : 44;
+    const total = toggleW * 2 + gap, tx = (W - total) / 2, ty = playY + playH + 12;
+    button(tx, ty, toggleW, toggleH, practiceMode ? "PRACTICE: ON" : "PRACTICE: OFF", menuSel === 1, 1, "#5f9eb8");
+    button(tx + toggleW + gap, ty, toggleW, toggleH, muted ? "SOUND: OFF" : "SOUND: ON", menuSel === 2, 2, "#5f9eb8");
+
+    ctx.fillStyle = "rgba(240,247,240,0.72)";
+    ctx.font = `${Math.min(12, W * 0.016)}px system-ui, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText("SPACE / ↑ / W / TAP TO JUMP     •     P PAUSE     •     ESC MENU", W / 2, H - 12);
+  } else {
+    const titleY = Math.max(27, H * 0.105);
+    ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#f8f6dc"; ctx.strokeStyle = outline; ctx.lineWidth = 4;
+    ctx.font = `900 ${Math.min(31, W * 0.04, H * 0.09)}px "Trebuchet MS", "Arial Black", system-ui, sans-serif`;
+    ctx.strokeText("SELECT LEVEL", W / 2, titleY);
+    ctx.fillText("SELECT LEVEL", W / 2, titleY);
+
+    const cols = W < 560 ? 2 : W < 930 ? 4 : 5;
+    const margin = Math.max(10, W * 0.025), gap = 7;
+    const bw = (W - margin * 2 - gap * (cols - 1)) / cols;
+    const bh = Math.max(34, Math.min(48, H * 0.12));
+    const rowGap = 5, startY = Math.max(48, H * 0.19);
+    levels.forEach((lv, i) => {
+      const x = margin + (i % cols) * (bw + gap);
+      const y = startY + Math.floor(i / cols) * (bh + rowGap);
+      const best = bestProg[i] || 0, selected = menuSel === i;
+      const fills = ["#4d95b7", "#6e9e70", "#a78a58", "#9a759c", "#5b9e98"];
+      const fill = best >= 100 ? "#73c96a" : fills[Math.floor(i / 4) % fills.length];
+      ctx.save();
+      ctx.fillStyle = "#102638"; rRect(x, y + 3, bw, bh, 6); ctx.fill();
+      ctx.fillStyle = selected ? "#f3d66a" : fill;
+      ctx.strokeStyle = outline; ctx.lineWidth = selected ? 3 : 2;
+      rRect(x, y, bw, bh, 6); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = selected ? "#263443" : "#f7f5df";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = `bold ${Math.min(14, bw * 0.095, bh * 0.32)}px system-ui, sans-serif`;
+      ctx.fillText(`${i + 1}. ${lv.name}`, x + bw / 2, y + bh * 0.39, bw - 10);
+      ctx.font = `${Math.min(10, bw * 0.07)}px system-ui, sans-serif`;
+      ctx.fillText(`BEST ${best}%`, x + bw / 2, y + bh * 0.72, bw - 8);
+      ctx.fillStyle = "rgba(18,39,54,0.65)";
+      ctx.fillRect(x + 6, y + bh - 5, bw - 12, 2);
+      if (best > 0) { ctx.fillStyle = selected ? "#f9f1c6" : "#d9ef9a"; ctx.fillRect(x + 6, y + bh - 5, (bw - 12) * Math.min(100, best) / 100, 2); }
+      ctx.restore();
+      menuBtns.push({ x, y, w: bw, h: bh, act: 10 + i });
+    });
+    const backW = Math.min(190, W * 0.34), backH = 34;
+    const backX = (W - backW) / 2, backY = H - backH - 8;
+    button(backX, backY, backW, backH, "←  BACK", menuSel === levels.length, 99, "#b96f68");
+  }
+}
 function menuAction() {
   if (menuScreen === "main") {
     if (menuSel === 0) {
