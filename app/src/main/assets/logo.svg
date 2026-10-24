@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 96" role="img" aria-labelledby="title">
+  <title id="title">Geometry Jump</title>
+  <defs>
+    <linearGradient id="cube" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a2e66d"/>
+      <stop offset=".55" stop-color="#69c957"/>
+      <stop offset="1" stop-color="#388d4b"/>
+    </linearGradient>
+  </defs>
+  <g stroke="#172b3a" stroke-width="5" stroke-linejoin="round">
+    <path d="M12 14 L76 14 L82 21 L82 78 L74 84 L14 84 L8 77 L8 21 Z" fill="url(#cube)"/>
+    <path d="M24 28h14v18H24zM52 28h14v18H52z" fill="#f8f6df" stroke="none"/>
+    <path d="M28 33h6v9h-6zM56 33h6v9h-6z" fill="#20394b" stroke="none"/>
+    <path d="M25 60h40v8H25z" fill="#2c7340" stroke="none"/>
+  </g>
+  <text x="100" y="43" fill="#f8f6df" stroke="#172b3a" stroke-width="2.5" paint-order="stroke" font-family="Trebuchet MS,Arial,sans-serif" font-size="25" font-weight="900" letter-spacing=".2">GEOMETRY</text>
+  <text x="101" y="73" fill="#70d65e" stroke="#172b3a" stroke-width="2.5" paint-order="stroke" font-family="Trebuchet MS,Arial,sans-serif" font-size="27" font-weight="900" letter-spacing="1.2">JUMP</text>
+</svg>
