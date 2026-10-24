@@ -32,28 +32,18 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.4.0
-          name: Geometry Jump v0.4.0
+          tag_name: v0.4.1
+          name: Geometry Jump v0.4.1
           make_latest: true
           generate_release_notes: true
           overwrite_files: true
           files: app/build/outputs/apk/debug/app-debug.apk
           body: |
-            ## Geometry Jump v0.4.0
+            ## Geometry Jump v0.4.1
 
-            - Replaced the initial prototype with an open-source canvas game base.
-            - Improved frame stepping and mobile canvas scaling.
-            - Added Newgrounds soundtrack tracks with artist attribution and remote-playback fallback.
-            - Added open-source and third-party notices.
-            - Added a 17-level progressive campaign plus the three original bonus stages (20 playable levels total).
-            - Added mirror portals, ball gravity switching, blue jump pads/orbs, mini/large portals, and pink jump pads/orbs.
-            - Reworked level selection into a compact grid for the expanded campaign.
-            - Added a custom geometric Geometry Jump logo and SVG favicon.
-            - Redesigned menus and player icons in a classic early-era style with reduced glow and saturation.
-            - Fixed Space, Up Arrow and W keyboard input, including key-release and focus-loss handling.
+            - Standardized the app's visible name as Geometry Jump vX.Y.Z.
+            - Set the Android launcher label and in-game WebView page title to Geometry Jump v0.4.1.
+            - Incremented Android versionCode to 5 and versionName to 0.4.1.
+            - Retained the original geometric logo, classic early-era visual style, and keyboard input fixes.
 
-            ### Music credits
-            - **Air Shifter** — JensVide: https://www.newgrounds.com/audio/listen/1378746
-            - **Dark Allure** — JensVide: https://www.newgrounds.com/audio/listen/1373649
-
-            The artist lists these tracks under Creative Commons terms permitting reuse with attribution. Availability in the official Geometry Dash whitelist is separate from permission to reuse the music in this fan-made game. Not affiliated with RobTop Games or Newgrounds.
+            Not affiliated with RobTop Games.
