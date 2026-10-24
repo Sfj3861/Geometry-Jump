@@ -1,12 +1,6 @@
 plugins { id 'com.android.application' }
 android {
-    namespace 'com.safjran.geometryjump'
-    compileSdk 35
-    defaultConfig {
-        applicationId 'com.safjran.geometryjump'
-        minSdk 23
-        targetSdk 28
-        versionCode 5
-        versionName '0.4.1'
-    }
+ namespace 'com.safjran.geometryjump'
+ compileSdk 35
+ defaultConfig { applicationId 'com.safjran.geometryjump'; minSdk 23; targetSdk 28; versionCode 6; versionName '0.5.0' }
 }

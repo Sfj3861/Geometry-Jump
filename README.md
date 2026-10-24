@@ -1,41 +1,40 @@
-# Geometry Jump v0.4.1
+# Geometry Jump v0.5.0
 
-Recreación fan-made y de código abierto de un plataformas rítmico para Android, construido con Canvas, JavaScript y un contenedor Android WebView.
+Original open-source rhythm-platformer fan project for Android. The Android host is a WebView; the game runs in a self-contained Canvas 2D engine.
 
-## Campaña
+## Rebuild in v0.5.0
+- Replaced the previous procedural prototype with a new engine, simulation loop, UI states and stage progression.
+- 12 progressive original levels, unlocks, best-progress tracking and attempt counters saved locally.
+- Cube, ship, UFO and gravity-ball modes; mirror sections; mini/big portals; jump pads and interactive orbs.
+- Keyboard, mouse, touch and Android hardware-key input.
+- Pause, retry, level select, options/credits screens and generated sound effects.
+- Responsive logical-resolution rendering, fixed-step simulation and bounded frame accumulator.
+- No remote music or runtime package dependencies; no official GD assets, layouts or music.
 
-La campaña principal tiene **17 niveles progresivos** y conserva los **3 niveles originales como desafíos extra** (20 niveles en total):
+## Controls
+- Jump: Space, Up Arrow, W, mouse or touch.
+- Ship: hold the jump input to rise, release to fall.
+- Ball: press to flip gravity. UFO: press for each impulse.
+- Pause: P; retry: R; sound: M; hitbox overlay: H; menu: Esc or Android back.
+- Mobile: tap the play area. Pause and menu controls are in the top corners.
 
-1. **Niveles 1–5 — estilo 1.0:** cubo, bloques, pinchos y huecos.
-2. **Niveles 6–7 — espejo:** portales que reflejan horizontalmente la escena.
-3. **Niveles 8–10 — ball:** modo bola con cambio de gravedad al tocar.
-4. **Niveles 11–12 — azul:** pads y orbes azules.
-5. **Niveles 13–17 — tamaño y rosa:** portales mini/grande, orbes rosas y pads rosas.
-6. **Desafíos extra:** los tres niveles originales con secciones mixtas.
+## Historical inspiration (not an exact remake)
+- 1.0: cube, spikes, blocks and gaps.
+- 1.1: mirror mode.
+- 1.2: gravity-ball mode.
+- 1.3: blue jump pads and orbs.
+- 1.4: visual variety and ship-style play.
+- 1.5: UFO, pink pads/orbs, icon variety and editor improvements.
 
-## Interfaz y controles
+References: [update history](https://geometrydash.wiki.gg/es/wiki/Actualizaciones) and [Update 1.5](https://geometrydash.wiki.gg/wiki/Update_1.5).
 
-- Nombre de la app con versión semántica: **Geometry Jump v0.4.1**.
-- Logo geométrico original de Geometry Jump y favicon SVG.
-- Menús compactos con botones en relieve, contornos oscuros y menos efectos de neón.
-- Diseño de los iconos de cubo y bola inspirado en la estética geométrica clásica, sin reutilizar los recursos gráficos originales.
-- La interfaz toma como referencia la evolución de Geometry Dash 1.0–1.5: siete niveles iniciales en 1.0; espejo en 1.1; bola en 1.2; orbes y pads azules en 1.3; nuevas naves y decoración en 1.4; UFO, orbes y pads rosas y mejoras del editor en 1.5. Fuentes: [historial de versiones](https://geometrydash.wiki.gg/es/wiki/Actualizaciones) y [actualización 1.5](https://geometrydash.wiki.gg/es/wiki/Actualización_1.5).
+## Build
+- [Build Android APK workflow](https://github.com/Sfj3861/Geometry-Jump/actions)
+- [Releases](https://github.com/Sfj3861/Geometry-Jump/releases)
+- Android Gradle Plugin 8.7.3; Java 17; debug APK via Gradle assembleDebug.
 
-## Controles
+## Versioning
+App name format: Geometry Jump vX.Y.Z. This update is v0.5.0 (versionCode 6).
 
-- Tocar la pantalla, hacer clic o pulsar **Espacio / ↑ / W** para saltar. Los eventos de teclado evitan el desplazamiento de la página y se limpian al perder el foco.
-- En modo bola, tocar/pulsar alterna la gravedad.
-- **P** pausa, **Esc** vuelve al menú, **M** silencia el audio y **F** activa pantalla completa.
-- El modo práctica guarda checkpoints temporales.
-
-## Versionado
-
-Cada actualización cambia el nombre visible, el `versionName`, el código de versión y la etiqueta de release. Formato: `Geometry Jump vX.Y.Z`; esta actualización es **v0.4.1**.
-
-## Compilar
-
-El repositorio incluye workflows de GitHub Actions para compilar la APK de Android y publicar una release. Consulta [Actions](https://github.com/Sfj3861/Geometry-Jump/actions) y [Releases](https://github.com/Sfj3861/Geometry-Jump/releases).
-
-## Créditos y licencias
-
-Consulta `THIRD_PARTY_NOTICES.md` y `app/src/main/assets/OPEN_SOURCE_LICENSE.txt` para las licencias y atribuciones del código y de la música. Geometry Jump es un proyecto fan-made y no está afiliado a RobTop Games.
+## License
+See LICENSE and THIRD_PARTY_NOTICES.md. Unofficial fan project, not affiliated with RobTop Games.

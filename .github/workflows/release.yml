@@ -1,49 +1,40 @@
 name: Build and publish Android release
-
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'app/**'
-      - '*.gradle'
-      - 'settings.gradle'
-      - 'gradle.properties'
-      - '.github/workflows/release.yml'
+    paths: [ 'app/**', '*.gradle', 'settings.gradle', 'gradle.properties', '.github/workflows/release.yml' ]
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Check JavaScript syntax
+        run: node --check app/src/main/assets/game.js
+      - uses: gradle/actions/setup-gradle@v4
       - name: Build APK
         run: gradle --no-daemon assembleDebug
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.4.1
-          name: Geometry Jump v0.4.1
+          tag_name: v0.5.0
+          name: Geometry Jump v0.5.0
           make_latest: true
           generate_release_notes: true
           overwrite_files: true
           files: app/build/outputs/apk/debug/app-debug.apk
           body: |
-            ## Geometry Jump v0.4.1
-
-            - Standardized the app's visible name as Geometry Jump vX.Y.Z.
-            - Set the Android launcher label and in-game WebView page title to Geometry Jump v0.4.1.
-            - Incremented Android versionCode to 5 and versionName to 0.4.1.
-            - Retained the original geometric logo, classic early-era visual style, and keyboard input fixes.
-
-            Not affiliated with RobTop Games.
+            ## Geometry Jump v0.5.0
+            - Rebuilt the game engine and stage progression.
+            - Added 12 original stages with early-era-inspired mechanics.
+            - Added cube, ship, UFO and gravity-ball modes, pads/orbs and portals.
+            - Added responsive rendering, input handling, pause/retry, local progress and generated sound effects.
+            - Removed remote soundtrack dependencies.
+            - Added JavaScript syntax validation before Android compilation.
+            Unofficial fan-made game; not affiliated with RobTop Games.

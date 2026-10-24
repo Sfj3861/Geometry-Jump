@@ -1,16 +1,12 @@
 # Third-party notices
 
-Geometry Jump incorporates/adapts the open-source browser game **GeometryDash** by Anay Goenka:
-https://github.com/anaygoenka/GeometryDash
+## Current version
+The v0.5.0 game engine, visuals, procedural stage patterns and synthesized sound effects were rewritten for this repository. The runtime does not download or bundle third-party game assets or music.
 
-The upstream project is licensed under the MIT License; its license text is included in `OPEN_SOURCE_LICENSE.txt`.
+## Research references
+- Geometry Dash update history: https://geometrydash.wiki.gg/es/wiki/Actualizaciones
+- Update 1.5 overview: https://geometrydash.wiki.gg/wiki/Update_1.5
+- Open-source browser recreation reviewed for architecture/licensing context: https://github.com/anaygoenka/GeometryDash (MIT)
+- OpenGD reviewed as a C++/Axmol reference: https://github.com/Open-GD/OpenGD (GPL-3.0; full operation requires game resources)
 
-Geometry Jump is an unofficial fan-made tribute and is not affiliated with RobTop Games.
-
-
-## Newgrounds music
-
-- **Air Shifter** — JensVide, https://www.newgrounds.com/audio/listen/1378746
-- **Dark Allure** — JensVide, https://www.newgrounds.com/audio/listen/1373649
-
-Both tracks are listed by the artist under Creative Commons terms permitting reuse with attribution. Credits remain with JensVide. Geometry Jump is an unofficial fan-made game and is not affiliated with RobTop Games or Newgrounds. Song availability in the official Geometry Dash whitelist is separate from these reuse licenses.
+Geometry Jump is unofficial and not affiliated with RobTop Games. Official names are referenced only to explain historical mechanics; official level layouts, sprites and music are not included.
