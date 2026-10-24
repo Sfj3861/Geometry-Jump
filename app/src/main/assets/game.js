@@ -1449,8 +1449,8 @@ function drawObs() {
         const surfY = o.surfY || groundY;
         // Gradient spike
         const sg = ctx.createLinearGradient(sx + SPIKE_W / 2, surfY - SPIKE_H, sx + SPIKE_W / 2, surfY);
-        sg.addColorStop(0, `hsl(${hue + 30}, 100%, 60%)`);
-        sg.addColorStop(1, `hsl(${hue + 30}, 80%, 35%)`);
+        sg.addColorStop(0, `hsl(${hue + 30}, 68%, 54%)`);
+        sg.addColorStop(1, `hsl(${hue + 30}, 55%, 35%)`);
         ctx.fillStyle = sg;
         ctx.shadowColor = `hsl(${hue + 30}, 65%, 45%)`;
         ctx.shadowBlur = 3;
@@ -1461,7 +1461,7 @@ function drawObs() {
         ctx.closePath();
         ctx.fill();
         // Inner highlight
-        ctx.fillStyle = `hsla(${hue + 30}, 100%, 70%, 0.3)`;
+        ctx.fillStyle = `hsla(${hue + 30}, 70%, 70%, 0.22)`;
         ctx.beginPath();
         ctx.moveTo(sx + SPIKE_W * 0.3, surfY);
         ctx.lineTo(sx + SPIKE_W * 0.7, surfY);
@@ -1724,11 +1724,11 @@ function drawPlayer() {
   if (P.isShip) {
     // Ship mode — improved with gradient
     ctx.save();
-    ctx.shadowColor = "#00ffcc";
-    ctx.shadowBlur = 18;
+    ctx.shadowColor = "#00a89a";
+    ctx.shadowBlur = 2;
     const sg = ctx.createLinearGradient(-PS / 2, 0, PS / 2, 0);
     sg.addColorStop(0, "#009988");
-    sg.addColorStop(1, "#00ffcc");
+    sg.addColorStop(1, "#5bc7b3");
     ctx.fillStyle = sg;
     ctx.beginPath();
     ctx.moveTo(PS / 2, 0);
@@ -1743,33 +1743,48 @@ function drawPlayer() {
     ctx.fillRect(-PS * 0.8, -4, PS * 0.35, 8);
     ctx.globalAlpha = 1;
     ctx.restore();
-  } else {
-    // Cube mode — improved with gradient, icon, and glow
+  } else if (P.isBall) {
+    // Classic, clearly readable ball icon.
     ctx.save();
-    ctx.shadowColor = `hsl(${ph}, 65%, 52%)`;
-    ctx.shadowBlur = 16;
-    // Gradient fill
+    ctx.fillStyle = "#70c85b";
+    ctx.strokeStyle = "#172b3a";
+    ctx.lineWidth = Math.max(3, PS * 0.09);
+    ctx.beginPath(); ctx.arc(0, 0, PS * 0.43, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = "#e8f0d2"; ctx.lineWidth = Math.max(2, PS * 0.07);
+    ctx.beginPath(); ctx.arc(0, 0, PS * 0.24, -Math.PI * 0.85, Math.PI * 0.85); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-PS * 0.28, 0); ctx.lineTo(PS * 0.28, 0); ctx.stroke();
+    ctx.restore();
+  } else {
+    // Classic cube: solid colour, dark outline and small bevels, without a neon halo.
+    ctx.save();
     const cg = ctx.createLinearGradient(-PS / 2, -PS / 2, PS / 2, PS / 2);
-    cg.addColorStop(0, `hsl(${ph}, 80%, 55%)`);
-    cg.addColorStop(1, `hsl(${ph}, 70%, 40%)`);
+    cg.addColorStop(0, "#a2e66d");
+    cg.addColorStop(0.52, "#69c957");
+    cg.addColorStop(1, "#388d4b");
     ctx.fillStyle = cg;
+    ctx.strokeStyle = "#172b3a";
+    ctx.lineWidth = Math.max(3, PS * 0.08);
+    ctx.lineJoin = "round";
     ctx.fillRect(-PS / 2, -PS / 2, PS, PS);
-    // Border
-    ctx.strokeStyle = `hsl(${ph}, 100%, 72%)`;
-    ctx.lineWidth = 2.5;
     ctx.strokeRect(-PS / 2, -PS / 2, PS, PS);
-    // Inner detail — eye/icon
-    ctx.fillStyle = `hsl(${ph}, 100%, 80%)`;
-    ctx.fillRect(-6, -6, 12, 12);
-    ctx.fillStyle = `hsl(${ph}, 100%, 90%)`;
-    ctx.fillRect(-3, -3, 6, 6);
+    ctx.fillStyle = "rgba(255,255,220,0.55)";
+    ctx.fillRect(-PS * 0.34, -PS * 0.34, PS * 0.68, PS * 0.09);
+    ctx.fillRect(-PS * 0.34, -PS * 0.25, PS * 0.09, PS * 0.50);
+    ctx.fillStyle = "#f8f6df";
+    ctx.fillRect(-PS * 0.25, -PS * 0.12, PS * 0.17, PS * 0.21);
+    ctx.fillRect(PS * 0.08, -PS * 0.12, PS * 0.17, PS * 0.21);
+    ctx.fillStyle = "#20394b";
+    ctx.fillRect(-PS * 0.20, -PS * 0.07, PS * 0.07, PS * 0.12);
+    ctx.fillRect(PS * 0.13, -PS * 0.07, PS * 0.07, PS * 0.12);
+    ctx.fillStyle = "rgba(25,65,48,0.48)";
+    ctx.fillRect(-PS * 0.25, PS * 0.23, PS * 0.50, PS * 0.08);
     ctx.restore();
   }
   ctx.restore();
 
   // Trail sparkle particles
-  if (gameState === "playing" && !P.dead && Math.random() < 0.3) {
-    emitP(P.x, P.y + PS, `hsl(${ph}, 80%, 55%)`, 1, 3);
+  if (gameState === "playing" && !P.dead && Math.random() < 0.08) {
+    emitP(P.x, P.y + PS, "#a7d9a0", 1, 2);
   }
 }
 
@@ -1799,11 +1814,11 @@ function drawHUD() {
     rRect(bx, by, bw, bh, br);
     ctx.clip();
     const grd = ctx.createLinearGradient(bx, 0, bx + bw * (prog / 100), 0);
-    grd.addColorStop(0, `hsl(${hue + 120}, 80%, 55%)`);
-    grd.addColorStop(1, `hsl(${hue + 140}, 90%, 65%)`);
+    grd.addColorStop(0, `hsl(${hue + 120}, 55%, 52%)`);
+    grd.addColorStop(1, `hsl(${hue + 140}, 60%, 60%)`);
     ctx.fillStyle = grd;
     ctx.shadowColor = `hsl(${hue + 120}, 60%, 52%)`;
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 0;
     ctx.fillRect(bx, by, bw * (prog / 100), bh);
     ctx.restore();
   }
