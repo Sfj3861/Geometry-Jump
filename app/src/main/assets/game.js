@@ -1473,11 +1473,11 @@ function drawObs() {
       case "spikeD": {
         const surfY = o.surfY || CEIL_Y;
         const sg = ctx.createLinearGradient(sx + SPIKE_W / 2, surfY, sx + SPIKE_W / 2, surfY + SPIKE_H);
-        sg.addColorStop(0, `hsl(${hue + 30}, 80%, 35%)`);
-        sg.addColorStop(1, `hsl(${hue + 30}, 100%, 60%)`);
+        sg.addColorStop(0, `hsl(${hue + 30}, 55%, 35%)`);
+        sg.addColorStop(1, `hsl(${hue + 30}, 68%, 54%)`);
         ctx.fillStyle = sg;
-        ctx.shadowColor = `hsl(${hue + 30}, 100%, 55%)`;
-        ctx.shadowBlur = 12;
+        ctx.shadowColor = `hsl(${hue + 30}, 62%, 48%)`;
+        ctx.shadowBlur = 3;
         ctx.beginPath();
         ctx.moveTo(sx, surfY);
         ctx.lineTo(sx + SPIKE_W, surfY);
@@ -1498,10 +1498,10 @@ function drawObs() {
         pg.addColorStop(0, `hsl(${hue}, 55%, 32%)`);
         pg.addColorStop(1, `hsl(${hue}, 45%, 22%)`);
         ctx.fillStyle = pg;
-        ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
-        ctx.shadowBlur = 8;
+        ctx.shadowColor = `hsl(${hue}, 60%, 46%)`;
+        ctx.shadowBlur = 3;
         ctx.fillRect(sx, o.y, o.w, o.h);
-        ctx.strokeStyle = `hsl(${hue}, 90%, 55%)`;
+        ctx.strokeStyle = `hsl(${hue}, 60%, 48%)`;
         ctx.lineWidth = 2.5;
         ctx.strokeRect(sx, o.y, o.w, o.h);
         break;
@@ -1511,10 +1511,10 @@ function drawObs() {
         bg.addColorStop(0, `hsl(${hue + 10}, 40%, 24%)`);
         bg.addColorStop(1, `hsl(${hue + 10}, 30%, 14%)`);
         ctx.fillStyle = bg;
-        ctx.shadowColor = `hsl(${hue}, 80%, 45%)`;
-        ctx.shadowBlur = 8;
+        ctx.shadowColor = `hsl(${hue}, 55%, 42%)`;
+        ctx.shadowBlur = 3;
         ctx.fillRect(sx, o.y, o.w, o.h);
-        ctx.strokeStyle = `hsl(${hue}, 65%, 45%)`;
+        ctx.strokeStyle = `hsl(${hue}, 55%, 42%)`;
         ctx.lineWidth = 2;
         ctx.strokeRect(sx, o.y, o.w, o.h);
         // Inner cross pattern
@@ -1590,7 +1590,7 @@ function drawObs() {
       case "bigP": {
         const portalColors = { mirrorP: "#55ddff", ballP: "#ffcc44", miniP: "#ff55dd", bigP: "#ff9944" };
         const c = portalColors[o.type];
-        ctx.strokeStyle = c; ctx.shadowColor = c; ctx.shadowBlur = 18; ctx.lineWidth = 5;
+        ctx.strokeStyle = c; ctx.shadowColor = c; ctx.shadowBlur = 3; ctx.lineWidth = 5;
         ctx.beginPath(); ctx.ellipse(sx + 12, groundY - 48, 15, 42, 0, 0, Math.PI * 2); ctx.stroke();
         ctx.globalAlpha = 0.18; ctx.fillStyle = c; ctx.fill(); ctx.globalAlpha = 1;
         ctx.lineWidth = 2; ctx.beginPath();
@@ -1609,7 +1609,7 @@ function drawObs() {
         const c = cols[o.spd] || "#fff";
         ctx.strokeStyle = c;
         ctx.shadowColor = c;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 3;
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(sx, groundY);
@@ -1626,7 +1626,7 @@ function drawObs() {
         const c = o.type === "shipP" ? "#00ffcc" : "#ffcc00";
         ctx.strokeStyle = c;
         ctx.shadowColor = c;
-        ctx.shadowBlur = 16;
+        ctx.shadowBlur = 3;
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.arc(sx + 15, groundY - 42, 26, 0, Math.PI * 2);
@@ -1648,10 +1648,10 @@ function drawObs() {
         mg.addColorStop(0, `hsl(${hue + 60}, 75%, 42%)`);
         mg.addColorStop(1, `hsl(${hue + 60}, 65%, 28%)`);
         ctx.fillStyle = mg;
-        ctx.shadowColor = `hsl(${hue + 60}, 100%, 55%)`;
-        ctx.shadowBlur = 12;
+        ctx.shadowColor = `hsl(${hue + 60}, 58%, 48%)`;
+        ctx.shadowBlur = 3;
         ctx.fillRect(sx, my, o.w, o.h);
-        ctx.strokeStyle = `hsl(${hue + 60}, 100%, 65%)`;
+        ctx.strokeStyle = `hsl(${hue + 60}, 65%, 55%)`;
         ctx.lineWidth = 2;
         ctx.strokeRect(sx, my, o.w, o.h);
         // Danger indicator — pulsing inner
@@ -1671,7 +1671,7 @@ function drawObs() {
         ctx.fillRect(fcx - 60, fcy - 60, 120, 120);
         // Spinning arcs
         ctx.shadowColor = "#fff";
-        ctx.shadowBlur = 25;
+        ctx.shadowBlur = 3;
         ctx.lineWidth = 3;
         const arcCols = ["#fff", "#00ff88", "#ffcc00"];
         for (let i = 0; i < 3; i++) {
@@ -1682,7 +1682,7 @@ function drawObs() {
         }
         // Center star
         ctx.fillStyle = "#fff";
-        ctx.shadowBlur = 20;
+        ctx.shadowBlur = 3;
         ctx.beginPath();
         ctx.arc(fcx, fcy, 6 + Math.sin(t * 2) * 2, 0, Math.PI * 2);
         ctx.fill();
@@ -1875,7 +1875,7 @@ function drawHUD() {
     ctx.globalAlpha = a;
     ctx.save();
     ctx.shadowColor = `hsl(${hue + 120}, 100%, 60%)`;
-    ctx.shadowBlur = 30;
+    ctx.shadowBlur = 3;
     ctx.fillStyle = "#fff";
     ctx.font = `bold ${Math.min(56, W * 0.075)}px "Segoe UI", system-ui, sans-serif`;
     ctx.textAlign = "center";
@@ -1891,7 +1891,7 @@ function drawHUD() {
 
     ctx.save();
     ctx.shadowColor = "#fff";
-    ctx.shadowBlur = 25;
+    ctx.shadowBlur = 3;
     ctx.fillStyle = "#fff";
     ctx.font = `bold ${Math.min(58, W * 0.08)}px "Segoe UI", system-ui, sans-serif`;
     ctx.textAlign = "center";
@@ -1921,7 +1921,7 @@ function drawDeath() {
 
   ctx.save();
   ctx.shadowColor = "#ff0040";
-  ctx.shadowBlur = 35;
+  ctx.shadowBlur = 3;
   ctx.fillStyle = "#ff0040";
   ctx.font = `bold ${Math.min(52, W * 0.07)}px "Segoe UI", system-ui, sans-serif`;
   ctx.textAlign = "center";
@@ -1973,7 +1973,7 @@ function drawWin() {
 
   ctx.save();
   ctx.shadowColor = "#00ff88";
-  ctx.shadowBlur = 40;
+  ctx.shadowBlur = 3;
   ctx.fillStyle = "#00ff88";
   ctx.font = `bold ${Math.min(58, W * 0.08)}px "Segoe UI", system-ui, sans-serif`;
   ctx.textAlign = "center";
