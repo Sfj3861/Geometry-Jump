@@ -2,10 +2,10 @@
 (() => {
   // Original Canvas engine; no official GD assets, level files, or music are bundled.
   const c=document.getElementById("game"),g=c.getContext("2d",{alpha:false});
-  const W=960,H=540,FLOOR=430,CEIL=54,STEP=1/60,VERSION="0.5.0";
+  const W=960,H=540,FLOOR=430,CEIL=54,STEP=1/60,VERSION="0.5.1";
   const C={ink:"#142636",text:"#f7f4df",muted:"#a8bbc3",green:"#75d15d",yellow:"#f1d56a",blue:"#6cb8d0",pink:"#df8fba",red:"#d9756d",grid:"rgba(230,242,239,.055)"};
   let scale=1,ox=0,oy=0,dpr=1,state="menu",screen="main",selected=0,buttons=[],practice=false,muted=false,hitboxes=false;
-  let levelIndex=0,level=null,world=[],finishX=0,camera=0,elapsed=0,acc=0,last=0,attempt=0,deaths=0,particles=[],held=false,pressed=false,shake=0,audio=null,toast="",toastUntil=0;
+  let levelIndex=0,level=null,world=[],finishX=0,camera=0,elapsed=0,acc=0,last=0,attempt=0,deaths=0,particles=[],held=false,pressed=false,shake=0,audio=null,toast="",toastUntil=0,checkpointX=180,practiceRespawn=false;
   let save={unlocked:1,completed:[],best:{},attempts:{}};
   try{save=Object.assign(save,JSON.parse(localStorage.getItem("gj-save-v2")||"{}"));}catch(_){}
   const LEVELS=[
@@ -40,20 +40,20 @@
     case"ball":add("portal",{mode:"ball",color:C.yellow});x+=125;break;case"ufo":add("portal",{mode:"ufo",color:C.pink});x+=125;break;
     case"mirror":add("portal",{mode:"mirror",color:"#c5a4e8"});x+=125;break;case"mini":add("portal",{mode:"mini",color:C.yellow});x+=125;break;case"big":add("portal",{mode:"big",color:C.green});x+=125;break;
   }}finishX=x+180;out.push({type:"finish",x:finishX});return out.sort((a,b)=>a.x-b.x);}
-  function reset(){P.x=180;P.y=FLOOR-P.size;P.vy=0;P.rot=0;P.mode="cube";P.gravity=1;P.mirror=false;P.grounded=true;P.mini=false;P.size=34;camera=0;particles=[];held=false;pressed=false;}
+  function reset(){P.x=180;P.y=FLOOR-P.size;P.vy=0;P.rot=0;P.mode="cube";P.gravity=1;P.mirror=false;P.grounded=true;P.mini=false;P.size=34;camera=0;checkpointX=180;practiceRespawn=false;particles=[];held=false;pressed=false;}
   function start(i){if(i>=save.unlocked){toastMsg("Complete the previous level first");return;}levelIndex=i;level=LEVELS[i];world=build(level);attempt=0;deaths=0;elapsed=0;screen="game";state="playing";retry();sound(420,.06,"sine",.025);}
   function retry(){state="playing";attempt++;save.attempts[levelIndex]=(save.attempts[levelIndex]||0)+1;world.forEach(o=>o.used=false);reset();persist();}
   function progress(){return level?Math.min(100,Math.floor(P.x/finishX*100)):0;}
   function emit(x,y,color,n=7){for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*5,vy:(Math.random()-.5)*5-1,life:.45+Math.random()*.35,color,size:2+Math.random()*3});}
-  function die(){if(state!=="playing")return;state="dead";deaths++;shake=8;sound(150,.22,"sawtooth",.06);emit(P.x+P.size/2,P.y+P.size/2,C.red,18);save.best[levelIndex]=Math.max(save.best[levelIndex]||0,progress());persist();}
+  function die(){if(state!=="playing"||practiceRespawn)return;deaths++;shake=8;sound(150,.22,"sawtooth",.06);emit(P.x+P.size/2,P.y+P.size/2,C.red,18);save.best[levelIndex]=Math.max(save.best[levelIndex]||0,progress());persist();if(practice){practiceRespawn=true;P.x=checkpointX;P.size=P.mini?24:34;P.y=FLOOR-P.size;P.vy=0;P.mode="cube";P.gravity=1;P.mirror=false;P.grounded=true;camera=Math.max(0,P.x-245);for(const o of world)if(o.x>=checkpointX)o.used=false;toastMsg("Practice checkpoint");return;}state="dead";}
   function win(){state="complete";sound(523,.18,"sine");if(!save.completed.includes(levelIndex))save.completed.push(levelIndex);save.unlocked=Math.min(LEVELS.length,Math.max(save.unlocked,levelIndex+2));save.best[levelIndex]=100;persist();}
   function gapAt(x){return world.some(o=>o.type==="gap"&&x>=o.x-4&&x<=o.x+o.w);}
   function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
   function update(dt){
-    elapsed+=dt;const size=P.size,prev=P.x;P.x+=(P.mode==="ship"?5.7:5.45)*dt*60;camera=Math.max(0,P.x-245);
+    practiceRespawn=false;elapsed+=dt;const size=P.size,prev=P.x;P.x+=(P.mode==="ship"?5.7:5.45)*dt*60;camera=Math.max(0,P.x-245);
     const just=pressed;
     for(const o of world){if(o.used)continue;
-      if(o.type==="portal"&&Math.abs(P.x+size/2-o.x-14)<8){o.used=true;if(o.mode==="mirror")P.mirror=!P.mirror;else if(o.mode==="mini"){P.mini=true;P.size=24;}else if(o.mode==="big"){P.mini=false;P.size=34;}else{P.mode=o.mode;if(o.mode!=="ball")P.gravity=1;}emit(o.x,FLOOR-65,o.color,8);sound(680,.08,"sine",.035);}
+      if(o.type==="portal"&&Math.abs(P.x+size/2-o.x-14)<8){o.used=true;if(o.mode==="mirror")P.mirror=!P.mirror;else if(o.mode==="mini"){P.mini=true;P.size=24;}else if(o.mode==="big"){P.mini=false;P.size=34;}else{P.mode=o.mode;if(o.mode!=="ball")P.gravity=1;if(o.mode==="ship"){P.y=Math.min(P.y,FLOOR-P.size-58);P.vy=-2.2;}}emit(o.x,FLOOR-65,o.color,8);sound(680,.08,"sine",.035);}
       if(o.type==="pad"&&P.x+size>o.x&&P.x<o.x+24&&P.gravity===1){o.used=true;P.vy=o.impulse;P.grounded=false;sound(850,.1,"sine");emit(o.x,FLOOR-8,o.color);}
       if(o.type==="orb"&&just&&Math.hypot(P.x+size/2-o.x,P.y+size/2-o.y)<56){o.used=true;P.vy=o.impulse;P.gravity=1;P.grounded=false;sound(900,.12,"sine");emit(o.x,o.y,o.color,10);}
     }
@@ -63,10 +63,12 @@
     P.y+=P.vy*dt*60;if(P.mode==="cube"||P.mode==="ufo")P.rot+=P.grounded?0:.11*Math.sign(P.vy||1);else if(P.mode==="ball")P.rot+=.12*P.gravity;
     const gap=gapAt(P.x+size/2);
     if(P.gravity>0&&!gap&&P.y+size>=FLOOR){P.y=FLOOR-size;P.vy=0;P.grounded=true;}else if(P.gravity<0&&P.y<=CEIL){P.y=CEIL;P.vy=0;P.grounded=true;}else P.grounded=false;
-    if(P.mode==="ship"&&(P.y<CEIL||P.y+size>FLOOR))die();
-    if(gap&&P.y+size>FLOOR+2)die();if(P.y>H+40||P.y+size< -40)die();
-    const body={x:P.x+5,y:P.y+4,w:size-10,h:size-8};
+    if(P.mode==="ship"&&(P.y<CEIL||P.y+P.size>FLOOR))die();
+    if(gap&&P.y+P.size>FLOOR+2)die();if(P.y>H+40||P.y+P.size< -40)die();
+    if(practice&&P.grounded&&P.mode==="cube"&&P.x-checkpointX>=900){checkpointX=Math.floor(P.x/900)*900;toastMsg("Checkpoint saved");}
+    const body={x:P.x+5,y:P.y+4,w:P.size-10,h:P.size-8};
     for(const o of world){if(o.type==="spike"&&overlap(body,{x:o.x+7,y:FLOOR-28,w:22,h:28}))die();if(o.type==="ceilingSpike"&&P.mode==="ship"&&overlap(body,{x:o.x+6,y:o.y,w:24,h:28}))die();if(o.type==="block"&&overlap(body,{x:o.x,y:FLOOR-o.h,w:o.w,h:o.h}))die();}
+    if(practiceRespawn){pressed=false;return;}
     for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.life-=dt;if(p.life<=0)particles.splice(i,1);}
     if(state==="playing"&&P.x>=finishX)win();if(P.x>prev&&Math.floor(P.x/100)!==Math.floor(prev/100)&&Math.floor(P.x/100)%4===0)emit(P.x,P.y+size/2,C.green,1);
     pressed=false;

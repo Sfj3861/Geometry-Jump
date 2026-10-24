@@ -23,18 +23,19 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.5.0
-          name: Geometry Jump v0.5.0
+          tag_name: v0.5.1
+          name: Geometry Jump v0.5.1
           make_latest: true
           generate_release_notes: true
           overwrite_files: true
           files: app/build/outputs/apk/debug/app-debug.apk
           body: |
-            ## Geometry Jump v0.5.0
+            ## Geometry Jump v0.5.1
             - Rebuilt the game engine and stage progression.
             - Added 12 original stages with early-era-inspired mechanics.
             - Added cube, ship, UFO and gravity-ball modes, pads/orbs and portals.
             - Added responsive rendering, input handling, pause/retry, local progress and generated sound effects.
             - Removed remote soundtrack dependencies.
             - Added JavaScript syntax validation before Android compilation.
+            - Fixed practice checkpoint respawning and ship portal entry.
             Unofficial fan-made game; not affiliated with RobTop Games.
