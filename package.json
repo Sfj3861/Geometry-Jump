@@ -1,0 +1,15 @@
+{
+  "name": "geometry-jump-android",
+  "version": "0.6.0",
+  "private": true,
+  "description": "Offline JSNES bundle for Geometry Jump Android",
+  "scripts": {
+    "build:nes": "esbuild app/src/main/assets/nes-player.js --bundle --platform=browser --format=iife --outfile=app/src/main/assets/nes-player.bundle.js"
+  },
+  "dependencies": {
+    "jsnes": "2.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.5"
+  }
+}

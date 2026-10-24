@@ -2,7 +2,13 @@ name: Build and publish Android release
 on:
   push:
     branches: [ main ]
-    paths: [ 'app/**', '*.gradle', 'settings.gradle', 'gradle.properties', '.github/workflows/release.yml' ]
+    paths:
+      - 'app/**'
+      - 'package.json'
+      - '*.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/release.yml'
   workflow_dispatch:
 permissions:
   contents: write
@@ -11,31 +17,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Bundle offline NES emulator
+        run: |
+          npm install --no-audit --no-fund
+          npm run build:nes
+      - name: Fetch and validate Famidash ROM
+        run: |
+          curl -fL --retry 3 --retry-delay 2 'https://github.com/tfdsoft/famidash/releases/download/Demo5/famidash.nes' -o app/src/main/assets/famidash.nes
+          python -c "from pathlib import Path; p=Path('app/src/main/assets/famidash.nes'); b=p.read_bytes(); assert b[:4] == b'NES\\x1a', 'Invalid NES ROM header'; assert len(b) == 786448, f'Unexpected ROM size: {len(b)}'; print(f'Validated Famidash ROM: {len(b)} bytes')"
+      - name: Check bundled JavaScript
+        run: node --check app/src/main/assets/nes-player.bundle.js
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '17' }
-      - uses: actions/setup-node@v4
-        with: { node-version: '22' }
-      - name: Check JavaScript syntax
-        run: node --check app/src/main/assets/game.js
       - uses: gradle/actions/setup-gradle@v4
       - name: Build APK
         run: gradle --no-daemon assembleDebug
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.5.1
-          name: Geometry Jump v0.5.1
+          tag_name: v0.6.0
+          name: Geometry Jump v0.6.0
           make_latest: true
           generate_release_notes: true
           overwrite_files: true
           files: app/build/outputs/apk/debug/app-debug.apk
           body: |
-            ## Geometry Jump v0.5.1
-            - Rebuilt the game engine and stage progression.
-            - Added 12 original stages with early-era-inspired mechanics.
-            - Added cube, ship, UFO and gravity-ball modes, pads/orbs and portals.
-            - Added responsive rendering, input handling, pause/retry, local progress and generated sound effects.
-            - Removed remote soundtrack dependencies.
-            - Added JavaScript syntax validation before Android compilation.
-            - Fixed practice checkpoint respawning and ship portal entry.
-            Unofficial fan-made game; not affiliated with RobTop Games.
+            ## Geometry Jump v0.6.0
+            - Replaced the procedural mock gameplay with the Famidash NES ROM.
+            - Bundles JSNES locally so the game runs offline after installation.
+            - Added Android hardware keyboard mapping and touch NES controller.
+            - Added ROM-header validation and a file-picker fallback for builds without a bundled ROM.
+            - App name follows Geometry Jump vX.Y.Z.
+            Famidash is a community demake; this is an unofficial fan project and is not affiliated with RobTop Games.

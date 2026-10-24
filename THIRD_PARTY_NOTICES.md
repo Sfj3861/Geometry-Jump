@@ -1,12 +1,19 @@
 # Third-party notices
 
-## Current version
-The v0.5.0 game engine, visuals, procedural stage patterns and synthesized sound effects were rewritten for this repository. The runtime does not download or bundle third-party game assets or music.
+## Famidash
+Famidash is a community-made Geometry Dash demake for the Nintendo Entertainment System.
+- Project: https://github.com/tfdsoft/famidash
+- Source licence: MIT
+- Copyright notice: Copyright 2023-2024 TFDSoft
+- ROM distribution source used by CI: Famidash Demo 5 release, https://github.com/tfdsoft/famidash/releases/tag/Demo5
+- The ROM is bundled in release builds from that public release and is not part of this repository's source tree.
 
-## Research references
-- Geometry Dash update history: https://geometrydash.wiki.gg/es/wiki/Actualizaciones
-- Update 1.5 overview: https://geometrydash.wiki.gg/wiki/Update_1.5
-- Open-source browser recreation reviewed for architecture/licensing context: https://github.com/anaygoenka/GeometryDash (MIT)
-- OpenGD reviewed as a C++/Axmol reference: https://github.com/Open-GD/OpenGD (GPL-3.0; full operation requires game resources)
+## JSNES
+- Project: https://github.com/bfirsh/jsnes
+- Version bundled: 2.1.0
+- Licence: Apache License 2.0
+- Copyright 2020 Ben Firshman
+- The JSNES source is bundled at build time into app/src/main/assets/nes-player.bundle.js.
 
-Geometry Jump is unofficial and not affiliated with RobTop Games. Official names are referenced only to explain historical mechanics; official level layouts, sprites and music are not included.
+## Geometry Jump
+Geometry Jump v0.6.0 is an unofficial Android wrapper for Famidash. It is not affiliated with RobTop Games. The app name format is Geometry Jump vX.Y.Z.

@@ -1,42 +1,30 @@
-# Geometry Jump v0.5.1
+# Geometry Jump v0.6.0
 
-Original open-source rhythm-platformer fan project for Android. The Android host is a WebView; the game runs in a self-contained Canvas 2D engine.
+Android wrapper for Famidash, the community-made Geometry Dash demake for the Nintendo Entertainment System. The previous Canvas prototype is no longer the gameplay source: the app runs the NES ROM using the JSNES emulator.
 
-## Rebuild in v0.5.1
-- Replaced the previous procedural prototype with a new engine, simulation loop, UI states and stage progression.
-- 12 progressive original levels, unlocks, best-progress tracking and attempt counters saved locally.
-- Cube, ship, UFO and gravity-ball modes; mirror sections; mini/big portals; jump pads and interactive orbs.
-- Keyboard, mouse, touch and Android hardware-key input.
-- Pause, retry, level select, options/credits screens and generated sound effects.
-- Responsive logical-resolution rendering, fixed-step simulation and bounded frame accumulator.
-- Practice mode now saves checkpoints and respawns there after a collision.
-- Ship portals now provide an initial flight buffer instead of starting at floor height.
-- No remote music or runtime package dependencies; no official GD assets, layouts or music.
+## What changed in v0.6.0
+- Uses the Famidash NES ROM as the game itself rather than approximating its mechanics in a separate Canvas game.
+- JSNES is bundled into the app at build time; installed builds do not need an internet connection to run the emulator.
+- The release workflow downloads the Famidash Demo 5 ROM, checks its NES header and expected 786,448-byte size, and packages it into the APK.
+- Adds a touchscreen NES controller, keyboard input, pause/resume, and ROM file-picker fallback.
+- App display name: Geometry Jump v0.6.0 (versionCode 8).
 
 ## Controls
-- Jump: Space, Up Arrow, W, mouse or touch.
-- Ship: hold the jump input to rise, release to fall.
-- Ball: press to flip gravity. UFO: press for each impulse.
-- Pause: P; retry: R; sound: M; hitbox overlay: H; menu: Esc or Android back.
-- Mobile: tap the play area. Pause and menu controls are in the top corners.
-
-## Historical inspiration (not an exact remake)
-- 1.0: cube, spikes, blocks and gaps.
-- 1.1: mirror mode.
-- 1.2: gravity-ball mode.
-- 1.3: blue jump pads and orbs.
-- 1.4: visual variety and ship-style play.
-- 1.5: UFO, pink pads/orbs, icon variety and editor improvements.
-
-References: [update history](https://geometrydash.wiki.gg/es/wiki/Actualizaciones) and [Update 1.5](https://geometrydash.wiki.gg/wiki/Update_1.5).
+- Jump/action: Space, Up Arrow, W, X or the on-screen A button.
+- Start: Enter or the on-screen START button.
+- Directional pad: arrow keys and the on-screen D-pad. I provides D-pad Up when Up Arrow is mapped to jump.
+- B: Z or the on-screen B button.
+- Android back toggles pause/resume.
 
 ## Build
-- [Build Android APK workflow](https://github.com/Sfj3861/Geometry-Jump/actions)
-- [Releases](https://github.com/Sfj3861/Geometry-Jump/releases)
-- Android Gradle Plugin 8.7.3; Java 17; debug APK via Gradle assembleDebug.
+The CI workflows install JSNES 2.1.0 and esbuild, bundle the emulator, download and validate the ROM, then compile the APK with Java 17 and Gradle.
 
-## Versioning
-App name format: Geometry Jump vX.Y.Z. This update is v0.5.1 (versionCode 7).
+- [Build workflow and APK artifact](https://github.com/Sfj3861/Geometry-Jump/actions)
+- [Published releases](https://github.com/Sfj3861/Geometry-Jump/releases)
+- [JSNES source and Apache 2.0 licence](https://github.com/bfirsh/jsnes)
+- [Famidash source and MIT licence](https://github.com/tfdsoft/famidash)
 
-## License
-See LICENSE and THIRD_PARTY_NOTICES.md. Unofficial fan project, not affiliated with RobTop Games.
+A local Android build without the CI preparation steps will show a ROM picker instead of embedding the game. To prepare it locally, run npm install, npm run build:nes, and place a compatible Famidash ROM at app/src/main/assets/famidash.nes before running Gradle.
+
+## Attribution and scope
+Famidash is a fan-made NES demake of Geometry Dash. Geometry Jump is an unofficial Android wrapper and is not affiliated with RobTop Games. See THIRD_PARTY_NOTICES.md and the bundled licence files.
