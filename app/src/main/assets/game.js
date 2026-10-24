@@ -7,6 +7,24 @@
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
+// Newgrounds music: both tracks are CC BY; keep artist attribution.
+const MUSIC_TRACKS = [
+  {
+    title: "Air Shifter",
+    artist: "JensVide",
+    page: "https://www.newgrounds.com/audio/listen/1378746",
+    url: "https://audio-download.ngfiles.com/1378000/1378746_Air-Shifter-SEGA-x-Electro.mp3?f1732716501"
+  },
+  {
+    title: "Dark Allure",
+    artist: "JensVide",
+    page: "https://www.newgrounds.com/audio/listen/1373649",
+    url: "https://audio-download.ngfiles.com/1373000/1373649_Dark-Allure-Otherworldly-x.mp3?f1731082125"
+  }
+];
+let externalMusic = null;
+
+
 // -------------------- Screen --------------------
 let W, H, groundY, dpr = 1;
 const GROUND_RATIO = 0.78;
@@ -352,6 +370,31 @@ const melNotes = [523, 0, 659, 0, 784, 0, 659, 523, 0, 784, 659, 0, 523, 659, 78
 
 function startMusic() {
   stopMusic();
+  const track = MUSIC_TRACKS[currentLevelIdx % MUSIC_TRACKS.length];
+  if (!muted && track) {
+    try {
+      externalMusic = new Audio(track.url);
+      externalMusic.loop = true;
+      externalMusic.volume = 0.38;
+      externalMusic.preload = "auto";
+      externalMusic.play().catch(() => {
+        // WebView/network restrictions can block remote audio; fall back to synthesized music.
+        externalMusic = null;
+        startSynthMusic();
+      });
+    } catch (e) {
+      externalMusic = null;
+      startSynthMusic();
+    }
+  } else if (!muted) {
+    startSynthMusic();
+  }
+  musicInt = setInterval(() => {
+    if (gameState === "playing") bgPulse = 0.35;
+  }, 175);
+}
+function startSynthMusic() {
+  if (musicInt) clearInterval(musicInt);
   mStep = 0;
   musicInt = setInterval(() => {
     if (muted || gameState !== "playing" || !ac) return;
@@ -370,6 +413,11 @@ function stopMusic() {
   if (musicInt) {
     clearInterval(musicInt);
     musicInt = null;
+  }
+  if (externalMusic) {
+    externalMusic.pause();
+    externalMusic.currentTime = 0;
+    externalMusic = null;
   }
 }
 
@@ -2113,7 +2161,13 @@ function menuAction() {
       menuScreen = "levels";
       menuSel = 0;
     } else if (menuSel === 1) practiceMode = !practiceMode;
-    else if (menuSel === 2) muted = !muted;
+    else if (menuSel === 2) {
+      muted = !muted;
+      if (externalMusic) {
+        if (muted) externalMusic.pause();
+        else if (gameState === "playing") externalMusic.play().catch(() => {});
+      }
+    }
   } else {
     if (menuSel < levels.length) startLevel(menuSel);
     else {
