@@ -1,4 +1,4 @@
-# Geometry Jump
+# Geometry Jump v0.4.1
 
 Recreación fan-made y de código abierto de un plataformas rítmico para Android, construido con Canvas, JavaScript y un contenedor Android WebView.
 
@@ -15,6 +15,7 @@ La campaña principal tiene **17 niveles progresivos** y conserva los **3 nivele
 
 ## Interfaz y controles
 
+- Nombre de la app con versión semántica: **Geometry Jump v0.4.1**.
 - Logo geométrico original de Geometry Jump y favicon SVG.
 - Menús compactos con botones en relieve, contornos oscuros y menos efectos de neón.
 - Diseño de los iconos de cubo y bola inspirado en la estética geométrica clásica, sin reutilizar los recursos gráficos originales.
@@ -27,9 +28,13 @@ La campaña principal tiene **17 niveles progresivos** y conserva los **3 nivele
 - **P** pausa, **Esc** vuelve al menú, **M** silencia el audio y **F** activa pantalla completa.
 - El modo práctica guarda checkpoints temporales.
 
+## Versionado
+
+Cada actualización cambia el nombre visible, el `versionName`, el código de versión y la etiqueta de release. Formato: `Geometry Jump vX.Y.Z`; esta actualización es **v0.4.1**.
+
 ## Compilar
 
-El repositorio incluye workflows de GitHub Actions para compilar la APK de Android y publicar una release. Consulta [Actions](https://github.com/Sfj3861/Geometry-Jump/actions) y [Releases](https://github.com/Sfj3861/Geometry-Jump/releases). La nueva versión de trabajo es **v0.4.0**.
+El repositorio incluye workflows de GitHub Actions para compilar la APK de Android y publicar una release. Consulta [Actions](https://github.com/Sfj3861/Geometry-Jump/actions) y [Releases](https://github.com/Sfj3861/Geometry-Jump/releases).
 
 ## Créditos y licencias
 
