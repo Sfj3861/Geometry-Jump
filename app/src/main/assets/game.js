@@ -1114,7 +1114,7 @@ function update() {
     }
   } else {
     // --- Cube mode ---
-    P.vy += GRAVITY;
+    P.vy += GRAVITY * (P.isBall ? P.gravitySign : 1);
     P.y += P.vy;
 
     let onPlat = false;
@@ -1150,7 +1150,7 @@ function update() {
     }
 
     // Ground
-    if (solidBelow && P.y + PS >= groundY) {
+    if (!P.isBall && solidBelow && P.y + PS >= groundY) {
       // If player's top is below ground level, they fell through a gap — kill them
       if (P.y > groundY) {
         kill();
@@ -1165,19 +1165,22 @@ function update() {
     } else if (!onPlat && P.y + PS < groundY) {
       P.grounded = false;
     }
+    if (P.isBall && P.gravitySign < 0) {
+      if (P.y <= CEIL_Y) { P.y = CEIL_Y; P.vy = 0; P.grounded = true; }
+      else if (!onPlat) P.grounded = false;
+    }
 
     // Fell into gap / void — kill as soon as player falls a full tile below ground
-    if (P.y > groundY + PS) {
+    if (!P.isBall && P.y > groundY + PS) {
       kill();
       return;
     }
 
     // Jump
-    if (inputJustDown && P.grounded) {
-      P.vy = JUMP_VEL;
-      P.grounded = false;
-      P.tgtRot += Math.PI / 2;
-      sfxJump();
+    if (inputJustDown && P.isBall) {
+      P.gravitySign *= -1; P.vy = 0; P.grounded = false; sfxOrb();
+    } else if (inputJustDown && P.grounded) {
+      P.vy = JUMP_VEL; P.grounded = false; P.tgtRot += Math.PI / 2; sfxJump();
     }
 
     // Rotation
@@ -1212,29 +1215,36 @@ function update() {
         break;
       }
       case "pad":
-        if (
-          !o._hit &&
-          rr(P.x, P.y, PS, PS, o.x, groundY - 16, 40, 16)
-        ) {
-          P.vy = PAD_JUMP;
-          P.grounded = false;
-          P.tgtRot += Math.PI;
-          sfxPad();
-          o._hit = true;
+      case "bluePad":
+      case "pinkPad":
+        if (!o._hit && rr(P.x, P.y, PS, PS, o.x, groundY - 18, 40, 18)) {
+          P.vy = o.type === "pinkPad" ? PAD_JUMP * 1.12 : (o.type === "bluePad" ? PAD_JUMP * 0.92 : PAD_JUMP);
+          P.grounded = false; P.tgtRot += Math.PI; sfxPad(); o._hit = true;
         }
         break;
       case "orb":
+      case "blueOrb":
+      case "pinkOrb":
         if (
           inputHeld &&
           !o._hit &&
           rr(P.x - 8, P.y - 8, PS + 16, PS + 16, o.x - 22, o.y - 22, 44, 44)
         ) {
-          P.vy = ORB_JUMP;
-          P.grounded = false;
-          P.tgtRot += Math.PI / 2;
+          P.vy = o.type === "pinkOrb" ? ORB_JUMP * 1.15 : (o.type === "blueOrb" ? ORB_JUMP * 0.9 : ORB_JUMP);
+          P.gravitySign = 1; P.grounded = false; P.tgtRot += Math.PI / 2;
           sfxOrb();
           o._hit = true;
         }
+        break;
+      case "mirrorP":
+        if (!o._hit && rr(P.x, P.y, PS, PS, o.x - 12, groundY - 92, 36, 92)) { P.mirrorMode = !P.mirrorMode; o._hit = true; emitP(P.x + PS / 2, P.y + PS / 2, "#66eeff", 12, 6); }
+        break;
+      case "ballP":
+        if (!o._hit && rr(P.x, P.y, PS, PS, o.x - 12, groundY - 92, 36, 92)) { P.isBall = true; P.gravitySign = 1; P.vy = 0; o._hit = true; }
+        break;
+      case "miniP":
+      case "bigP":
+        if (!o._hit && rr(P.x, P.y, PS, PS, o.x - 12, groundY - 92, 36, 92)) { PS = o.type === "miniP" ? 22 : 50; P.y = P.gravitySign < 0 ? CEIL_Y : groundY - PS; o._hit = true; emitP(P.x + PS / 2, P.y + PS / 2, o.type === "miniP" ? "#ff66dd" : "#ffcc55", 14, 6); }
         break;
       case "speedP":
         if (rr(P.x, P.y, PS, PS, o.x - 15, groundY - 80, 30, 80)) {
@@ -1507,13 +1517,16 @@ function drawObs() {
       }
       case "gap":
         break;
-      case "pad": {
+      case "pad":
+      case "bluePad":
+      case "pinkPad": {
         const bounce = o._hit ? Math.sin(now() * 0.01) * 3 : 0;
-        ctx.shadowColor = "#ffdd00";
+        const padColor = o.type === "pinkPad" ? "#ff44cc" : (o.type === "bluePad" ? "#33aaff" : "#ffdd00");
+        ctx.shadowColor = padColor;
         ctx.shadowBlur = 16;
         const pdg = ctx.createLinearGradient(sx + 20, groundY - 16, sx + 20, groundY);
-        pdg.addColorStop(0, "#ffee44");
-        pdg.addColorStop(1, "#cc9900");
+        pdg.addColorStop(0, padColor);
+        pdg.addColorStop(1, o.type === "pinkPad" ? "#aa1177" : (o.type === "bluePad" ? "#1155aa" : "#cc9900"));
         ctx.fillStyle = pdg;
         ctx.beginPath();
         ctx.moveTo(sx, groundY);
@@ -1524,10 +1537,13 @@ function drawObs() {
         ctx.fill();
         break;
       }
-      case "orb": {
+      case "orb":
+      case "blueOrb":
+      case "pinkOrb": {
         const pulse = Math.sin(now() * 0.005) * 4;
         const used = o._hit;
-        ctx.shadowColor = "#aa44ff";
+        const orbColors = o.type === "blueOrb" ? ["#77ddff", "#1688ff"] : (o.type === "pinkOrb" ? ["#ffbbef", "#e622a5"] : ["#dd88ff", "#7722cc"]);
+        ctx.shadowColor = used ? "#555" : orbColors[1];
         ctx.shadowBlur = used ? 0 : 22;
         // Outer ring
         if (!used) {
@@ -1539,8 +1555,8 @@ function drawObs() {
         }
         // Main orb
         const og = ctx.createRadialGradient(sx - 3, o.y - 3, 2, sx, o.y, 13 + pulse);
-        og.addColorStop(0, used ? "#555" : "#dd88ff");
-        og.addColorStop(1, used ? "#333" : "#7722cc");
+        og.addColorStop(0, used ? "#555" : orbColors[0]);
+        og.addColorStop(1, used ? "#333" : orbColors[1]);
         ctx.fillStyle = og;
         ctx.beginPath();
         ctx.arc(sx, o.y, 13 + pulse, 0, Math.PI * 2);
@@ -1553,6 +1569,21 @@ function drawObs() {
           ctx.fill();
         }
         break;
+      }
+      case "mirrorP":
+      case "ballP":
+      case "miniP":
+      case "bigP": {
+        const portalColors = { mirrorP: "#55ddff", ballP: "#ffcc44", miniP: "#ff55dd", bigP: "#ff9944" };
+        const c = portalColors[o.type];
+        ctx.strokeStyle = c; ctx.shadowColor = c; ctx.shadowBlur = 18; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.ellipse(sx + 12, groundY - 48, 15, 42, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 0.18; ctx.fillStyle = c; ctx.fill(); ctx.globalAlpha = 1;
+        ctx.lineWidth = 2; ctx.beginPath();
+        if (o.type === "mirrorP") { ctx.moveTo(sx + 12, groundY - 77); ctx.lineTo(sx + 12, groundY - 19); ctx.moveTo(sx + 3, groundY - 68); ctx.lineTo(sx + 21, groundY - 28); }
+        else if (o.type === "ballP") { ctx.arc(sx + 12, groundY - 48, 11, 0, Math.PI * 2); ctx.moveTo(sx + 4, groundY - 48); ctx.lineTo(sx + 20, groundY - 48); }
+        else { ctx.moveTo(sx + 4, groundY - 48); ctx.lineTo(sx + 20, groundY - 48); ctx.moveTo(sx + 12, groundY - 58); ctx.lineTo(sx + 12, groundY - 38); }
+        ctx.stroke(); break;
       }
       case "speedP": {
         const cols = {
@@ -1673,6 +1704,7 @@ function drawPlayer() {
 
   ctx.save();
   ctx.translate(cx, cy);
+  if (P.mirrorMode) ctx.scale(-1, 1);
   ctx.rotate(P.rot);
 
   if (P.isShip) {
@@ -2289,7 +2321,10 @@ function renderGameToText() {
       x: Math.round(P.x),
       y: Math.round(P.y),
       vy: Math.round(P.vy * 100) / 100,
-      mode: P.isShip ? "ship" : "cube",
+      mode: P.isShip ? "ship" : (P.isBall ? "ball" : "cube"),
+      size: PS,
+      gravity: P.gravitySign,
+      mirrored: P.mirrorMode,
       grounded: P.grounded,
       speed: Math.round(P.speed * 100) / 100,
     },
@@ -2336,6 +2371,7 @@ function frame() {
     updateParticles();
     ctx.save();
     ctx.translate(shakeX, shakeY);
+    if (P.mirrorMode) { const axis = 2 * (P.x - cameraX) + PS; ctx.translate(axis, 0); ctx.scale(-1, 1); ctx.translate(-axis, 0); }
     drawBG();
     drawGroundAndCeil();
     drawObs();
