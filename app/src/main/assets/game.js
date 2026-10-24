@@ -43,7 +43,7 @@ resize();
 window.addEventListener("resize", resize);
 
 // -------------------- Constants --------------------
-const PS = 38; // player size
+let PS = 38; // current player hitbox size (mini/large portals)
 const GRAVITY = 0.95;
 const JUMP_VEL = -13;
 const SHIP_GRAV = 0.42;
@@ -125,12 +125,16 @@ const P = {
   tgtRot: 0,
   grounded: false,
   isShip: false,
+  isBall: false,
+  gravitySign: 1,
+  mirrorMode: false,
   speed: BASE_SPEED,
   dead: false,
   done: false,
 };
 
 function resetPlayer(fromCp) {
+  PS = 38; P.isBall = false; P.gravitySign = 1; P.mirrorMode = false;
   if (fromCp && practiceMode && checkpoints.length) {
     P.x = checkpoints[checkpoints.length - 1];
   } else {
@@ -144,6 +148,9 @@ function resetPlayer(fromCp) {
   P.tgtRot = 0;
   P.grounded = true;
   P.isShip = false;
+  P.isBall = false;
+  P.gravitySign = 1;
+  P.mirrorMode = false;
   P.speed = BASE_SPEED;
   P.dead = false;
   P.done = false;
@@ -470,8 +477,49 @@ function drawParticles() {
 // ================================================================
 
 function makeLevels() {
-  return [buildLevel1(), buildLevel2(), buildLevel3()];
+  return [...buildCampaignLevels(), buildLegacyLevel1(), buildLegacyLevel2(), buildLegacyLevel3()];
 }
+function buildCampaignLevels() {
+  const names = ["Stereo Start", "Back on Track", "Polargeist", "Dry Out", "Base After Base", "Mirror Maze", "Reflected", "Gravity Core", "Ballistic", "Dual Orbit", "Azure Steps", "Blue Current", "Miniature", "Pink Velocity", "Scale Shift", "Rose Circuit", "Final Dimension"];
+  const hues = [190, 155, 205, 35, 280, 175, 215, 265, 320, 245, 195, 225, 300, 330, 35, 275, 345];
+  return names.map((name, i) => buildCampaignLevel(i, name, hues[i]));
+}
+function buildCampaignLevel(index, name, hue) {
+  const obs = []; let x = 620;
+  const push = (type, extra = {}) => obs.push({ type, x, ...extra });
+  const spike = (offset = 0) => obs.push({ type: "spike", x: x + offset });
+  const block = (w = 54, h = 50) => push("block", { y: groundY - h, w, h });
+  const gap = (w = 110) => push("gap", { w });
+  const portal = (type, extra = {}) => push(type, extra);
+  for (let section = 0; section < 8; section++) {
+    if (index < 5) {
+      if (section % 3 === 0) { spike(); x += 300; spike(); x += 280; }
+      else if (section % 3 === 1) { spike(); spike(42); x += 360; }
+      else { block(60, 42 + (section % 2) * 18); x += 280; gap(95 + (section % 2) * 15); x += 330; }
+    } else if (index < 7) {
+      if (section === 1 || section === 5) { portal("mirrorP"); x += 180; }
+      if (section % 2 === 0) { spike(); spike(45); x += 360; } else { block(50, 55); x += 270; spike(); x += 260; }
+    } else if (index < 10) {
+      if (section === 0 || section === 4) { portal("ballP"); x += 180; }
+      if (section === 3 || section === 7) { portal("cubeP"); x += 170; }
+      if (section % 2 === 0) { block(46, 68); x += 250; block(46, 68); x += 270; } else { spike(); x += 220; gap(100); x += 300; }
+    } else if (index < 12) {
+      if (section % 2 === 0) { portal("bluePad"); x += 70; obs.push({ type: "blueOrb", x: x + 115, y: groundY - 145 }); x += 310; }
+      else { gap(130); obs.push({ type: "blueOrb", x: x + 65, y: groundY - 125 }); x += 360; spike(); x += 260; }
+      if (section === 3 || section === 6) { block(58, 62); x += 280; }
+    } else {
+      if (section === 0) { portal("miniP"); x += 180; }
+      if (section === 4) { portal("bigP"); x += 180; }
+      if (section % 3 === 0) { portal("pinkPad"); x += 70; obs.push({ type: "pinkOrb", x: x + 125, y: groundY - 155 }); x += 340; }
+      else if (section % 3 === 1) { gap(120); obs.push({ type: "pinkOrb", x: x + 60, y: groundY - 135 }); x += 340; spike(); x += 250; }
+      else { block(52, 65); x += 250; spike(); spike(48); x += 340; }
+    }
+  }
+  push("finish"); return { name, hue, obs, len: x + 300 };
+}
+function buildLegacyLevel1() { return buildLevel1(); }
+function buildLegacyLevel2() { return buildLevel2(); }
+function buildLegacyLevel3() { return buildLevel3(); }
 
 function buildLevel1() {
   const o = [];
